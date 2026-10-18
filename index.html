@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Anniversary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #030006;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* --- INTRO SCREEN & EXPLODING BUTTON --- */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .heart-btn {
+            background: linear-gradient(135deg, #ff4d6d, #8338ec);
+            color: white;
+            border: none;
+            padding: 20px 45px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(255, 77, 109, 0.6);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .heart-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 50px rgba(131, 56, 236, 0.9);
+        }
+
+        /* Explosion animation class */
+        .explode {
+            transform: scale(45) !important;
+            opacity: 0;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease 0.2s;
+        }
+
+        /* --- FULL-SCREEN SURREAL CANVAS --- */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: block;
+            z-index: 1;
+        }
+
+        /* --- LETTER POPUP STYLING --- */
+        #letter-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 2s ease-in-out;
+            padding: 20px;
+        }
+
+        .letter-box {
+            background: rgba(10, 5, 20, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 77, 109, 0.3);
+            padding: 45px 40px;
+            border-radius: 20px;
+            max-width: 650px;
+            width: 100%;
+            text-align: center;
+            color: #fdfdfd;
+            box-shadow: 0 0 40px rgba(131, 56, 236, 0.4);
+        }
+
+        .letter-box h2 {
+            font-family: 'Georgia', serif;
+            color: #ff4d6d;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            font-style: italic;
+            text-shadow: 0 0 10px rgba(255, 77, 109, 0.6);
+        }
+
+        .letter-box p {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        @media (max-width: 600px) {
+            .letter-box { padding: 30px 20px; }
+            .letter-box h2 { font-size: 1.6rem; }
+            .letter-box p { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BACKGROUND MUSIC -->
+    <audio id="bgm" src="aniv.mp3" loop></audio>
+
+    <!-- INTRO SCREEN WITH TRIGGER BUTTON -->
+    <div id="intro-screen">
+        <button class="heart-btn" id="explode-btn" onclick="triggerSurprise()">Click For Your Surprise ❤️</button>
+    </div>
+
+    <!-- FULL-SCREEN SURREAL CANVAS -->
+    <canvas id="dreamCanvas"></canvas>
+
+    <!-- THE LETTER -->
+    <div id="letter-container">
+        <div class="letter-box">
+            <h2>Happy Anniversary, Baby</h2>
+            <p>
+                I will always cherish this day, because it was when I became the happiest man in the world. I'll be here by your side for many years to come, and even if I die, I would carry your love to my grave, for it is the greatest thing I have.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- SURPRISE TRIGGER LOGIC ---
+        function triggerSurprise() {
+            const btn = document.getElementById('explode-btn');
+            const introScreen = document.getElementById('intro-screen');
+            const letterContainer = document.getElementById('letter-container');
+            const bgm = document.getElementById('bgm');
+
+            // 1. Play Music
+            bgm.volume = 0.6;
+            bgm.play().catch(e => console.log("Audio play blocked, interaction handled."));
+
+            // 2. Explode Button
+            btn.classList.add('explode');
+
+            // 3. Fade out intro screen and fade in letter + stardust
+            setTimeout(() => {
+                introScreen.style.opacity = '0';
+                setTimeout(() => {
+                    introScreen.style.display = 'none';
+                    letterContainer.style.opacity = '1';
+                    letterContainer.style.pointerEvents = 'auto';
+                }, 800);
+            }, 400);
+
+            // Start full-screen canvas animation
+            initSurrealCanvas();
+        }
+
+        // --- FULL-SCREEN SURREAL STARDUST ANIMATION ---
+        function initSurrealCanvas() {
+            const canvas = document.getElementById('dreamCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let width, height;
+            let particles = [];
+            let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2, targetX: window.innerWidth / 2, targetY: window.innerHeight / 2 };
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            window.addEventListener('mousemove', (e) => {
+                mouse.targetX = e.clientX;
+                mouse.targetY = e.clientY;
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    mouse.targetX = e.touches[0].clientX;
+                    mouse.targetY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            // Full-screen floating stardust particle
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.8;
+                    this.vy = (Math.random() - 0.5) * 0.8;
+                    this.size = Math.random() * 2.5 + 0.8;
+                    this.colorHue = Math.random() * 60 + 320; // Pinks, magentas, purples
+                    this.alpha = Math.random() * 0.7 + 0.3;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.spin = (Math.random() - 0.5) * 0.02;
+                }
+
+                update(time) {
+                    this.angle += this.spin;
+                    this.x += this.vx + Math.cos(this.angle) * 0.3;
+                    this.y += this.vy + Math.sin(this.angle) * 0.3;
+
+                    // Wrap around screen edges
+                    if (this.x < 0) this.x = width;
+                    if (this.x > width) this.x = 0;
+                    if (this.y < 0) this.y = height;
+                    if (this.y > height) this.y = 0;
+
+                    // Gentle mouse gravitational pull across the screen
+                    mouse.x += (mouse.targetX - mouse.x) * 0.04;
+                    mouse.y += (mouse.targetY - mouse.y) * 0.04;
+
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 180) {
+                        this.x += (dx / dist) * (180 - dist) * 0.05;
+                        this.y += (dy / dist) * (180 - dist) * 0.05;
+                    }
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${this.colorHue}, 90%, 65%, ${this.alpha})`;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = `hsla(${this.colorHue}, 100%, 50%, 0.8)`;
+                    ctx.fill();
+                }
+            }
+
+            // Populate screen with full-screen stardust
+            const particleCount = Math.floor((window.innerWidth * window.innerHeight) / 3000);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate(time) {
+                ctx.fillStyle = 'rgba(3, 0, 6, 0.15)'; // Smooth fading trail across the whole screen
+                ctx.fillRect(0, 0, width, height);
+
+                particles.forEach(p => {
+                    p.update(time);
+                    p.draw();
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>
